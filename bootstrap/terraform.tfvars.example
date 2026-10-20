@@ -1,0 +1,23 @@
+aws_region        = "us-east-1"
+state_bucket_name = "oficina-fiap-tfstate-123456789012"
+github_owner      = "tc-organization-26"
+github_owner_id   = "12345678"
+
+github_repositories = {
+  gestao-oficina-tc-1 = {
+    repository_id     = "111111111"
+    immutable_subject = false
+  }
+  oficina-k8s-infra = {
+    repository_id     = "222222222"
+    immutable_subject = true
+  }
+  oficina-db-infra = {
+    repository_id     = "333333333"
+    immutable_subject = true
+  }
+  oficina-auth-lambda = {
+    repository_id     = "444444444"
+    immutable_subject = true
+  }
+}

@@ -10,7 +10,7 @@ permissions:
 env:
   TF_IN_AUTOMATION: "true"
   TF_VAR_aws_region: ${{ vars.AWS_REGION || 'us-east-1' }}
-  TF_VAR_environment: ${{ github.ref_name == 'main' && 'prod' || 'hom' }}
+  TF_VAR_environment: ${{ (github.ref_name == 'main' || github.ref_name == 'master') && 'prod' || 'hom' }}
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -32,4 +32,3 @@ jobs:
         run: terraform plan -out=tfplan
       - if: github.event_name == 'push'
         run: terraform apply -auto-approve tfplan
-

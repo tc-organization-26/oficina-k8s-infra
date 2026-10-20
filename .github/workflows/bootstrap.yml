@@ -1,0 +1,45 @@
+name: Bootstrap AWS e GitHub
+
+on:
+  workflow_dispatch:
+    inputs:
+      state_bucket_name:
+        description: Nome globalmente unico do bucket S3; vazio usa oficina-fiap-tfstate-ACCOUNT_ID
+        required: false
+        type: string
+      aws_region:
+        description: Regiao AWS do projeto
+        required: true
+        default: us-east-1
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.9
+          terraform_wrapper: false
+
+      - name: Configurar credenciais iniciais do Lab
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          aws-access-key-id: ${{ secrets.BOOTSTRAP_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.BOOTSTRAP_AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.BOOTSTRAP_AWS_SESSION_TOKEN }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Criar backend, OIDC e configurar repositorios
+        shell: pwsh
+        env:
+          GH_ADMIN_TOKEN: ${{ secrets.GH_ADMIN_TOKEN }}
+        run: >-
+          ./scripts/bootstrap.ps1
+          -StateBucketName '${{ inputs.state_bucket_name }}'
+          -AwsRegion '${{ inputs.aws_region }}'
