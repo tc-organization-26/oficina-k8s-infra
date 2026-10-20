@@ -1,0 +1,6 @@
+aws_region         = "us-east-1"
+project_name       = "oficina"
+environment        = "dev"
+cluster_version    = "1.34"
+enable_nat_gateway = true
+
