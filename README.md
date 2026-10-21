@@ -4,6 +4,27 @@ Infraestrutura compartilhada da plataforma Oficina na AWS. Este repositório pro
 
 Ele também contém o bootstrap executado antes dos demais repositórios para criar o backend remoto do Terraform e a integração OIDC entre GitHub Actions e AWS.
 
+## Links de deploy e documentação
+
+- [Deployments ativos](https://github.com/tc-organization-26/oficina-k8s-infra/deployments): cada apply bem-sucedido registra a URL real do API Gateway do ambiente.
+- [Pipeline Terraform](https://github.com/tc-organization-26/oficina-k8s-infra/actions/workflows/terraform.yml).
+- [Pipeline de bootstrap](https://github.com/tc-organization-26/oficina-k8s-infra/actions/workflows/bootstrap.yml).
+- Swagger/OpenAPI: este repositório não expõe uma API própria. A documentação pertence à [Oficina API](https://github.com/tc-organization-26/gestao-oficina-tc-1#links-de-deploy-e-documentação-da-api) e fica disponível sob a URL publicada por este repositório.
+
+A URL do API Gateway também pode ser consultada com `terraform output -raw api_gateway_url`. Ela não é fixada no README porque muda entre contas, ambientes e recriações.
+
+## Tecnologias utilizadas
+
+- Terraform e provider AWS;
+- Amazon VPC, EKS, EC2, NLB e API Gateway HTTP API;
+- AWS Systems Manager Parameter Store, IAM e S3;
+- Kubernetes, Metrics Server e Cluster Autoscaler;
+- GitHub Actions com autenticação OIDC.
+
+## Dockerfile
+
+Não se aplica. Este repositório provisiona infraestrutura gerenciada com Terraform e não produz uma aplicação ou imagem de contêiner.
+
 ## Responsabilidades deste repositório
 
 - criar o bucket S3 que armazena os states Terraform;
