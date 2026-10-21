@@ -18,6 +18,8 @@ GitHub Actions -- credenciais temporárias do Lab --> AWS
 
 O cluster e o node group reutilizam `LabRole`. O IRSA fica desabilitado porque exigiria um provider OIDC IAM. O Cluster Autoscaler obtém credenciais pela role dos nodes; o launch template permite IMDSv2 aos pods com hop limit 2.
 
+O Vocareum também bloqueia `iam:GetRole` para a role `voclabs`. Por isso, após cada `terraform init`, o workflow executa `scripts/patch-eks-module-for-lab.ps1`. O patch é restrito ao módulo EKS `21.26.0`: ele impede a consulta `aws_iam_session_context` e habilita o acesso administrativo inicial pelo bootstrap nativo do EKS.
+
 ## Configuração no GitHub
 
 Crie três **Organization secrets** em `tc-organization-26`, com visibilidade **Selected repositories**, selecionando os quatro repositórios:
