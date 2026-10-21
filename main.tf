@@ -35,8 +35,11 @@ module "eks" {
   name               = "${local.name}-eks"
   kubernetes_version = var.cluster_version
 
-  endpoint_public_access                   = true
-  enable_cluster_creator_admin_permissions = true
+  endpoint_public_access = true
+  # O acesso inicial do criador é habilitado pelo patch do módulo aplicado no
+  # workflow. O recurso de acesso do módulo exigiria iam:GetRole, ação negada
+  # explicitamente pelo AWS Academy/Vocareum.
+  enable_cluster_creator_admin_permissions = false
   enable_irsa                              = false
   create_iam_role                          = false
   iam_role_arn                             = var.lab_role_arn
