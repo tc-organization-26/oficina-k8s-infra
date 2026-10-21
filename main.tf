@@ -41,6 +41,8 @@ module "eks" {
   # explicitamente pelo AWS Academy/Vocareum.
   enable_cluster_creator_admin_permissions = false
   enable_irsa                              = false
+  encryption_config                        = null
+  create_kms_key                           = false
   create_iam_role                          = false
   iam_role_arn                             = var.lab_role_arn
 
