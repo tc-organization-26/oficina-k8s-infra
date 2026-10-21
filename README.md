@@ -2,7 +2,9 @@
 
 Infraestrutura compartilhada da plataforma Oficina na AWS. Este repositório provisiona a rede, o cluster Amazon EKS, os componentes de escalabilidade e a camada de entrada formada por API Gateway, VPC Link e Network Load Balancer privado.
 
-Ele também contém o bootstrap executado antes dos demais repositórios para criar o backend remoto do Terraform e a integração OIDC entre GitHub Actions e AWS.
+Ele também contém o bootstrap compatível com o AWS Academy/Vocareum Lab. Nesse modo, os workflows usam as credenciais temporárias compartilhadas pela organização, o bucket de state é preparado pela AWS CLI e a `LabRole` preexistente substitui a criação de roles e providers OIDC bloqueada pelo laboratório.
+
+> Consulte [Execução completa no AWS Lab](docs/EXECUCAO-LAB.md) antes do primeiro deploy. As seções históricas sobre OIDC se aplicam apenas a contas AWS sem as restrições do laboratório.
 
 ## Links de deploy e documentação
 
@@ -19,7 +21,7 @@ A URL do API Gateway também pode ser consultada com `terraform output -raw api_
 - Amazon VPC, EKS, EC2, NLB e API Gateway HTTP API;
 - AWS Systems Manager Parameter Store, IAM e S3;
 - Kubernetes, Metrics Server e Cluster Autoscaler;
-- GitHub Actions com autenticação OIDC.
+- GitHub Actions com credenciais temporárias do AWS Lab.
 
 ## Dockerfile
 
@@ -29,8 +31,7 @@ Não se aplica. Este repositório provisiona infraestrutura gerenciada com Terra
 
 - criar o bucket S3 que armazena os states Terraform;
 - configurar locking do state por arquivo `.tflock`;
-- criar ou reutilizar o provider OIDC do GitHub na AWS;
-- criar a role usada pelos workflows dos quatro repositórios;
+- validar e reutilizar a `LabRole` fornecida pelo ambiente educacional;
 - configurar variables do GitHub Actions nos quatro repositórios;
 - criar VPC, sub-redes públicas e privadas, Internet Gateway e NAT Gateway;
 - criar Amazon EKS e Managed Node Group;
@@ -89,36 +90,33 @@ bootstrap
 
 ## Bootstrap
 
-O diretório `bootstrap/` é uma camada Terraform independente. Ele precisa existir porque o backend S3 e a role OIDC ainda não estão disponíveis na primeira execução.
+O workflow executa `scripts/bootstrap-lab.ps1`. O script prepara o backend S3 pela AWS CLI, valida a `LabRole` fornecida pelo ambiente educacional e configura as Actions Variables dos quatro repositórios. Ele não cria roles IAM nem provider OIDC.
 
-### O que é criado
+### O que é configurado
 
-- bucket S3 privado;
+- bucket S3 privado para os states;
 - criptografia SSE-S3;
 - versionamento do bucket;
 - bloqueio de acesso público;
-- policy que exige transporte TLS;
-- provider OIDC `token.actions.githubusercontent.com`, caso ainda não exista;
-- role `oficina-github-actions`;
-- policy com as permissões necessárias para os recursos do trabalho.
-
-O trust da role aceita somente os quatro repositórios informados. O script consulta os IDs imutáveis da organização e dos repositórios pela API do GitHub.
+- descoberta da `LabRole` preexistente;
+- variables dos quatro repositórios.
 
 ### Pré-requisitos da primeira execução
 
 1. Criar os quatro repositórios remotos no GitHub.
 2. Enviar este código ao repositório `oficina-k8s-infra`.
-3. Ter uma sessão AWS com permissão para S3, IAM e os serviços provisionados.
-4. Configurar os secrets abaixo somente neste repositório.
+3. Ter uma sessão válida do AWS Lab.
+4. Configurar os três secrets AWS na organização, com acesso aos quatro repositórios.
+5. Configurar `GH_ADMIN_TOKEN` neste repositório.
 
 | Secret | Uso |
 | --- | --- |
-| `BOOTSTRAP_AWS_ACCESS_KEY_ID` | Access key temporária da primeira execução |
-| `BOOTSTRAP_AWS_SECRET_ACCESS_KEY` | Secret key temporária |
-| `BOOTSTRAP_AWS_SESSION_TOKEN` | Session token do Lab |
+| `AWS_ACCESS_KEY_ID` | Access key temporária do Lab |
+| `AWS_SECRET_ACCESS_KEY` | Secret key temporária do Lab |
+| `AWS_SESSION_TOKEN` | Session token temporário do Lab |
 | `GH_ADMIN_TOKEN` | Consulta os repositórios e configura Actions variables nos quatro repositórios |
 
-O token do GitHub precisa conseguir ler os quatro repositórios e administrar Actions variables.
+Os três secrets AWS devem ser Organization secrets com visibilidade para os quatro repositórios. O token do GitHub precisa conseguir ler os repositórios e administrar Actions Variables.
 
 ### Execução pelo GitHub Actions
 
@@ -132,40 +130,31 @@ Entradas:
 Na primeira execução o script:
 
 1. identifica a conta AWS;
-2. consulta os IDs dos repositórios no GitHub;
-3. cria os recursos do bootstrap com state local temporário;
-4. cria `bootstrap/backend.tf` localmente;
-5. migra o state para `s3://BUCKET/bootstrap/terraform.tfstate`;
-6. grava `AWS_ROLE_ARN`, `AWS_REGION` e `TF_STATE_BUCKET` nos quatro repositórios.
+2. cria ou reutiliza o bucket de state;
+3. aplica versionamento, criptografia e bloqueio de acesso público;
+4. consulta a `LabRole` existente;
+5. grava `LAB_ROLE_ARN`, `AWS_REGION` e `TF_STATE_BUCKET` nos quatro repositórios.
 
 ### Execução local
 
-Pré-requisitos: AWS CLI, Terraform, PowerShell 7 e GitHub CLI.
+Pré-requisitos: AWS CLI, PowerShell 7 e GitHub CLI.
 
 ```powershell
 $env:GH_ADMIN_TOKEN = "token-com-acesso-aos-quatro-repos"
-./scripts/bootstrap.ps1 -AwsRegion us-east-1
+./scripts/bootstrap-lab.ps1 -AwsRegion us-east-1
 ```
 
 Para escolher o bucket:
 
 ```powershell
-./scripts/bootstrap.ps1 `
+./scripts/bootstrap-lab.ps1 `
   -AwsRegion us-east-1 `
   -StateBucketName oficina-fiap-tfstate-123456789012
 ```
 
-### Segunda sessão do AWS Lab
+### Nova sessão do AWS Lab
 
-O script verifica se o bucket existe:
-
-- se existir, conecta diretamente ao state remoto e aplica somente diferenças;
-- se não existir, executa novamente o fluxo inicial;
-- se o state pertencer a outra conta AWS, interrompe a execução.
-
-Credenciais temporárias do Lab só precisam ser atualizadas para executar novamente o workflow de bootstrap. Os workflows normais usam OIDC.
-
-> Alguns ambientes educacionais bloqueiam a criação de providers OIDC ou roles IAM. Essa restrição é da conta AWS e precisa ser liberada pela instituição ou atendida por uma role previamente fornecida.
+Atualize `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` e `AWS_SESSION_TOKEN` na organização. Todos os workflows usam essas credenciais temporárias. O bootstrap pode ser repetido com segurança para validar o bucket, a role e as variables.
 
 ## Terraform da plataforma
 
@@ -239,7 +228,7 @@ terraform plan
 
 ## CI/CD
 
-O workflow `.github/workflows/terraform.yml` usa OIDC e não armazena access keys permanentes.
+O workflow `.github/workflows/terraform.yml` usa os Organization secrets temporários do AWS Lab. Nenhuma credencial é versionada.
 
 | Evento | Comportamento |
 | --- | --- |
@@ -250,7 +239,7 @@ O workflow `.github/workflows/terraform.yml` usa OIDC e não armazena access key
 
 Variables esperadas, normalmente configuradas pelo bootstrap:
 
-- `AWS_ROLE_ARN`
+- `LAB_ROLE_ARN`
 - `AWS_REGION`
 - `TF_STATE_BUCKET`
 

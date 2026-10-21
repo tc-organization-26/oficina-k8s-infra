@@ -37,7 +37,9 @@ module "eks" {
 
   endpoint_public_access                   = true
   enable_cluster_creator_admin_permissions = true
-  enable_irsa                              = true
+  enable_irsa                              = false
+  create_iam_role                          = false
+  iam_role_arn                             = var.lab_role_arn
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
@@ -52,12 +54,19 @@ module "eks" {
 
   eks_managed_node_groups = {
     main = {
-      name           = "${local.name}-nodes"
-      instance_types = var.node_instance_types
-      capacity_type  = "ON_DEMAND"
-      min_size       = var.node_min_size
-      desired_size   = var.node_desired_size
-      max_size       = var.node_max_size
+      name            = "${local.name}-nodes"
+      instance_types  = var.node_instance_types
+      capacity_type   = "ON_DEMAND"
+      create_iam_role = false
+      iam_role_arn    = var.lab_role_arn
+      min_size        = var.node_min_size
+      desired_size    = var.node_desired_size
+      max_size        = var.node_max_size
+      metadata_options = {
+        http_endpoint               = "enabled"
+        http_tokens                 = "required"
+        http_put_response_hop_limit = 2
+      }
     }
   }
 
