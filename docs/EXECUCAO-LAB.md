@@ -114,7 +114,7 @@ gh run list --repo tc-organization-26/oficina-k8s-infra --workflow terraform.yml
 gh run watch ID --repo tc-organization-26/oficina-k8s-infra --exit-status
 ```
 
-Em `fase-3` ou `homologacao`, `TF_VAR_environment=hom`. Em `main` ou `master`, o ambiente é `prod`.
+Em `fase-3` ou `homologacao`, `TF_VAR_environment=hom`. Em `main`, o ambiente é `prod`.
 
 ## Ordem completa dos quatro repositórios
 

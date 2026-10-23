@@ -249,7 +249,7 @@ O workflow `.github/workflows/terraform.yml` usa os Organization secrets tempor�
 | Pull request de `fase-3` para `homologacao` | Apenas formatação e validação; não executa `terraform plan` |
 | Pull request de `homologacao` para `main` | Formatação, validação e `terraform plan` de produção |
 | Push em `homologacao` | `plan` e `apply` no state `oficina/k8s/hom.tfstate` |
-| Push em `main` ou `master` | `plan` e `apply` no state `oficina/k8s/prod.tfstate` |
+| Push em `main` | `plan` e `apply` no state `oficina/k8s/prod.tfstate` |
 | `workflow_dispatch` | Execução manual conforme a branch selecionada |
 
 Variables esperadas, normalmente configuradas pelo bootstrap:
