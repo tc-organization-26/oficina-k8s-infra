@@ -2,14 +2,17 @@ name: CI/CD - EKS
 on:
   pull_request:
   push:
-    branches: [main, master, homologacao]
+    branches: [main, homologacao]
   workflow_dispatch:
+concurrency:
+  group: terraform-${{ github.repository }}-${{ github.ref_name }}
+  cancel-in-progress: false
 permissions:
   contents: read
 env:
   TF_IN_AUTOMATION: "true"
   TF_VAR_aws_region: ${{ vars.AWS_REGION || 'us-east-1' }}
-  TF_VAR_environment: ${{ (github.ref_name == 'main' || github.ref_name == 'master') && 'prod' || 'hom' }}
+  TF_VAR_environment: ${{ github.ref_name == 'main' && 'prod' || 'hom' }}
   TF_VAR_lab_role_arn: ${{ vars.LAB_ROLE_ARN }}
 jobs:
   validar:
@@ -43,14 +46,14 @@ jobs:
           aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
       - run: terraform init -reconfigure -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" -backend-config="key=oficina/k8s/${TF_VAR_environment}.tfstate" -backend-config="region=${{ vars.AWS_REGION || 'us-east-1' }}" -backend-config="encrypt=true" -backend-config="use_lockfile=true"
       - run: pwsh ./scripts/patch-eks-module-for-lab.ps1
-      - run: terraform plan
+      - run: terraform plan -lock-timeout=5m
 
   deploy:
     if: github.event_name != 'pull_request'
     needs: validar
     runs-on: ubuntu-latest
     environment:
-      name: ${{ (github.ref_name == 'main' || github.ref_name == 'master') && 'producao' || 'homologacao' }}
+      name: ${{ github.ref_name == 'main' && 'producao' || 'homologacao' }}
       url: ${{ steps.endpoint.outputs.url }}
     steps:
       - uses: actions/checkout@v4
@@ -64,8 +67,8 @@ jobs:
           aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
       - run: terraform init -reconfigure -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" -backend-config="key=oficina/k8s/${TF_VAR_environment}.tfstate" -backend-config="region=${{ vars.AWS_REGION || 'us-east-1' }}" -backend-config="encrypt=true" -backend-config="use_lockfile=true"
       - run: pwsh ./scripts/patch-eks-module-for-lab.ps1
-      - run: terraform plan -out=tfplan
-      - run: terraform apply -auto-approve tfplan
+      - run: terraform plan -lock-timeout=5m -out=tfplan
+      - run: terraform apply -lock-timeout=5m -auto-approve tfplan
       - id: endpoint
         name: Registrar URL do API Gateway
         shell: bash
