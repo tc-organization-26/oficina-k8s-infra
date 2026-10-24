@@ -4,7 +4,21 @@ Infraestrutura compartilhada da plataforma Oficina na AWS. Este repositório pro
 
 Ele também contém o bootstrap compatível com o AWS Academy/Vocareum Lab. Nesse modo, os workflows usam as credenciais temporárias compartilhadas pela organização, o bucket de state é preparado pela AWS CLI e a `LabRole` preexistente substitui a criação de roles e providers OIDC bloqueada pelo laboratório.
 
+Como o Vocareum também bloqueia `iam:GetRole` para a role `voclabs`, o workflow executa `scripts/patch-eks-module-for-lab.ps1` após cada `terraform init`. O patch desativa a consulta incompatível do módulo EKS `21.26.0` e usa o bootstrap nativo do EKS para conceder acesso inicial ao criador do cluster. 
+
 > Consulte [Execução completa no AWS Lab](docs/EXECUCAO-LAB.md) antes do primeiro deploy. As seções históricas sobre OIDC se aplicam apenas a contas AWS sem as restrições do laboratório.
+
+## Fluxo de branches e promoção
+
+O workflow `.github/workflows/promote.yml` usa o `GITHUB_TOKEN` nativo do GitHub para abrir os Pull Requests de promoção:
+
+```text
+push em fase-3 → PR para homologacao
+merge em homologacao → PR para main
+merge em main → implantação em produção
+```
+
+Os merges são manuais e devem ocorrer somente depois da aprovação e dos checks. Em **Settings → Actions → General → Workflow permissions**, mantenha **Read and write permissions** e **Allow GitHub Actions to create and approve pull requests** habilitados. Nenhum secret adicional é necessário para criar os PRs.
 
 ## Links de deploy e documentação
 
@@ -67,7 +81,7 @@ Os nós do EKS ficam em sub-redes privadas. O endpoint do EKS permanece público
 | Compute | EKS Managed Node Group `ON_DEMAND` |
 | Storage add-on | AWS EBS CSI Driver |
 | Escala de Pods | Metrics Server + HPA definido no repositório da aplicação |
-| Escala de nós | Cluster Autoscaler com IRSA |
+| Escala de nós | Cluster Autoscaler usando a `LabRole` dos nodes |
 | Entrada privada | Network Load Balancer |
 | Entrada pública | API Gateway HTTP API + VPC Link |
 | Descoberta entre repositórios | AWS Systems Manager Parameter Store |
@@ -232,9 +246,10 @@ O workflow `.github/workflows/terraform.yml` usa os Organization secrets tempor�
 
 | Evento | Comportamento |
 | --- | --- |
-| Pull request | Formatação, validação e `terraform plan` para PRs do próprio repositório |
+| Pull request de `fase-3` para `homologacao` | Apenas formatação e validação; não executa `terraform plan` |
+| Pull request de `homologacao` para `main` | Formatação, validação e `terraform plan` de produção |
 | Push em `homologacao` | `plan` e `apply` no state `oficina/k8s/hom.tfstate` |
-| Push em `main` ou `master` | `plan` e `apply` no state `oficina/k8s/prod.tfstate` |
+| Push em `main` | `plan` e `apply` no state `oficina/k8s/prod.tfstate` |
 | `workflow_dispatch` | Execução manual conforme a branch selecionada |
 
 Variables esperadas, normalmente configuradas pelo bootstrap:
