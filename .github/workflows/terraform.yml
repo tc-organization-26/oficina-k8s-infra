@@ -26,28 +26,6 @@ jobs:
       - run: pwsh ./scripts/patch-eks-module-for-lab.ps1
       - run: terraform validate
 
-  planejar-pr:
-    if: >-
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.ref == 'homologacao' &&
-      github.event.pull_request.base.ref == 'main'
-    needs: validar
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
-        with: { terraform_version: "1.15.9" }
-      - uses: aws-actions/configure-aws-credentials@v6.3.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
-      - run: terraform init -reconfigure -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" -backend-config="key=oficina/k8s/${TF_VAR_environment}.tfstate" -backend-config="region=${{ vars.AWS_REGION || 'us-east-1' }}" -backend-config="encrypt=true" -backend-config="use_lockfile=true"
-      - run: pwsh ./scripts/patch-eks-module-for-lab.ps1
-      - run: terraform plan -lock-timeout=5m
-
   deploy:
     if: github.event_name != 'pull_request'
     needs: validar
