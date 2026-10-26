@@ -4,7 +4,7 @@ Infraestrutura compartilhada da plataforma Oficina na AWS. Este repositório pro
 
 Ele também contém o bootstrap compatível com o AWS Academy/Vocareum Lab. Nesse modo, os workflows usam as credenciais temporárias compartilhadas pela organização, o bucket de state é preparado pela AWS CLI e a `LabRole` preexistente substitui a criação de roles e providers OIDC bloqueada pelo laboratório.
 
-Como o Vocareum também bloqueia `iam:GetRole` para a role `voclabs`, o workflow executa `scripts/patch-eks-module-for-lab.ps1` após cada `terraform init`. O patch desativa a consulta incompatível do módulo EKS `21.26.0` e usa o bootstrap nativo do EKS para conceder acesso inicial ao criador do cluster. 
+Como o Vocareum também bloqueia `iam:GetRole` para a role `voclabs`, o workflow executa `scripts/patch-eks-module-for-lab.ps1` após cada `terraform init`. O patch desativa a consulta incompatível do módulo EKS `21.26.0` e usa o bootstrap nativo do EKS para conceder acesso inicial ao criador do cluster.  
 
 > Consulte [Execução completa no AWS Lab](docs/EXECUCAO-LAB.md) antes do primeiro deploy. As seções históricas sobre OIDC se aplicam apenas a contas AWS sem as restrições do laboratório.
 
