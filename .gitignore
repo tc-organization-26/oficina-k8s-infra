@@ -6,3 +6,4 @@ terraform.tfvars
 bootstrap/backend.tf
 bootstrap/*.auto.tfvars.json
 crash.log
+/DESTROY-LAB-LOCAL.md

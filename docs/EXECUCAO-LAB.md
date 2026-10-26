@@ -18,6 +18,8 @@ GitHub Actions -- credenciais temporárias do Lab --> AWS
 
 O cluster e o node group reutilizam `LabRole`. O IRSA fica desabilitado porque exigiria um provider OIDC IAM. O Cluster Autoscaler obtém credenciais pela role dos nodes; o launch template permite IMDSv2 aos pods com hop limit 2.
 
+O Vocareum também bloqueia `iam:GetRole` para a role `voclabs`. Por isso, após cada `terraform init`, o workflow executa `scripts/patch-eks-module-for-lab.ps1`. O patch é restrito ao módulo EKS `21.26.0`: ele impede a consulta `aws_iam_session_context` e habilita o acesso administrativo inicial pelo bootstrap nativo do EKS.
+
 ## Configuração no GitHub
 
 Crie três **Organization secrets** em `tc-organization-26`, com visibilidade **Selected repositories**, selecionando os quatro repositórios:
@@ -48,6 +50,23 @@ AWS_ROLE_ARN=arn:aws:iam::ACCOUNT_ID:role/LabRole
 ```
 
 `AWS_ROLE_ARN` é mantida apenas para compatibilidade; os workflows do Lab usam `LAB_ROLE_ARN` e os três secrets temporários.
+
+## Promoção automática entre branches
+
+O workflow usa o `GITHUB_TOKEN` fornecido automaticamente pelo GitHub. Em **Settings → Actions → General → Workflow permissions**, selecione **Read and write permissions** e habilite **Allow GitHub Actions to create and approve pull requests**. Não é necessário cadastrar outro secret.
+
+O fluxo de promoção é:
+
+```text
+push em fase-3
+  -> valida e abre ou mantém PR de fase-3 para homologacao
+  -> merge manual após os checks
+  -> valida e faz deploy em homologacao
+  -> após sucesso, abre ou mantém PR de homologacao para main na mesma execução
+  -> merge manual após os checks
+```
+
+Se `homologacao` ainda não existir, o workflow a cria a partir de `main`. Proteja `homologacao` e `main` contra push direto e exija Pull Request para merge.
 
 ## Bootstrap
 
@@ -96,7 +115,7 @@ gh run list --repo tc-organization-26/oficina-k8s-infra --workflow terraform.yml
 gh run watch ID --repo tc-organization-26/oficina-k8s-infra --exit-status
 ```
 
-Em `fase-3` ou `homologacao`, `TF_VAR_environment=hom`. Em `main` ou `master`, o ambiente é `prod`.
+Em `fase-3` ou `homologacao`, `TF_VAR_environment=hom`. Em `main`, o ambiente é `prod`.
 
 ## Ordem completa dos quatro repositórios
 
