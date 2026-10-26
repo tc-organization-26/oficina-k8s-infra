@@ -10,11 +10,11 @@ Como o Vocareum também bloqueia `iam:GetRole` para a role `voclabs`, o workflow
 
 ## Fluxo de branches e promoção
 
-O workflow `.github/workflows/promote.yml` usa o `GITHUB_TOKEN` nativo do GitHub para abrir os Pull Requests de promoção:
+O workflow `.github/workflows/terraform.yml` centraliza validação, deploy e promoção usando o `GITHUB_TOKEN` nativo do GitHub. Em `fase-3`, valida antes de abrir o PR para `homologacao`. Em `homologacao`, abre o PR para `main` somente após o deploy bem-sucedido, na mesma execução:
 
 ```text
-push em fase-3 → PR para homologacao
-merge em homologacao → PR para main
+push em fase-3 → validação → PR para homologacao
+merge em homologacao → validação → deploy em homologação → PR para main
 merge em main → implantação em produção
 ```
 
