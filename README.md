@@ -75,6 +75,14 @@ Prepare o [checklist de acessos e configurações](docs/EXECUCAO-LAB-AWS.md#chec
 
 Na primeira instalação, execute manualmente `bootstrap.yml` antes do deploy da plataforma. Ele prepara S3 e registra as variáveis `AWS_REGION`, `TF_STATE_BUCKET` e `LAB_ROLE_ARN`; não distribui os secrets AWS, JWT, GHCR ou Datadog. Depois da plataforma, implante banco, autenticação e aplicação em sequência.
 
+### Acompanhamento dos deploys
+
+Consulte os [Deployments deste repositório](https://github.com/tc-organization-26/oficina-k8s-infra/deployments) para acompanhar as implantações de homologação e produção e acessar a URL do API Gateway registrada pelo workflow. 
+
+A URL também fica no resumo da execução e no output `api_gateway_url`; pode mudar entre ambientes e recriações. As rotas dependem dos deploys da autenticação e da aplicação.
+
+Este repositório provisiona infraestrutura com Terraform. A imagem da aplicação é construída no repositório da Oficina API.
+
 ## Arquitetura
 
 ```mermaid
@@ -164,8 +172,7 @@ O [guia AWS](docs/EXECUCAO-LAB-AWS.md) contém pré-requisitos, comandos e ordem
 Este repositório provisiona infraestrutura e não expõe uma API de negócio própria. A documentação e as requisições da aplicação consumidora estão disponíveis em:
 
 - [Swagger local da Oficina API](http://localhost:8081/swagger-ui/index.html), após iniciar a aplicação.
-- [Collection Insomnia da Oficina API](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/src/main/resources/insomnia/collection.yaml).
-- [Collection Insomnia do login por CPF](https://github.com/tc-organization-26/oficina-auth-lambda/blob/HEAD/docs/insomnia/collection.json).
+- [Collection Insomnia](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/src/main/resources/insomnia/collection.yaml): inclui o login por CPF da Lambda (`POST /auth/login`) e os fluxos de negócio da API.
 
 ## Infraestrutura e integração entre os repositórios
 
