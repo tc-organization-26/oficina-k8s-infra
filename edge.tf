@@ -29,13 +29,13 @@ resource "aws_lb_listener" "app" {
 }
 
 locals {
-  node_group_asg_names = flatten([
-    for group in values(module.eks.eks_managed_node_groups) : group.node_group_autoscaling_group_names
-  ])
+  node_group_asg_names = {
+    main = module.eks.eks_managed_node_groups["main"].node_group_autoscaling_group_names[0]
+  }
 }
 
 resource "aws_autoscaling_attachment" "app" {
-  for_each               = toset(local.node_group_asg_names)
+  for_each               = local.node_group_asg_names
   autoscaling_group_name = each.value
   lb_target_group_arn    = aws_lb_target_group.app.arn
 }
@@ -95,4 +95,3 @@ resource "aws_ssm_parameter" "platform" {
   type  = "String"
   value = each.value
 }
-
