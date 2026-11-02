@@ -17,7 +17,7 @@ Os guias abaixo complementam este README com instruções de execução, configu
 - [Instalação das ferramentas](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/INSTALACAO-FERRAMENTAS.md) — instalar ferramentas e conferir o ambiente.
 - [Conta AWS comum](docs/CONTA-AWS-COMUM.md) — preparar IAM, OIDC e adaptar a execução fora do Academy.
 - [Validação local e execução manual](docs/VALIDACAO-E-EXECUCAO-MANUAL.md) — validação e execução pelo terminal.
-- [Execução no laboratório AWS](docs/EXECUCAO-LAB-AWS.md) — checklist GitHub, dependências, deploy e encerramento.
+- [Execução no laboratório AWS](docs/EXECUCAO-LAB-AWS.md) — checklist GitHub, dependências, deploy e destroy.
 - [Tecnologias e versões](docs/VERSOES.md) — tecnologias, ferramentas, versões e fontes.
 - [Troubleshooting](docs/TROUBLESHOOTING.md) — diagnóstico por assunto e recuperação.
 
@@ -254,9 +254,9 @@ A disponibilidade do cluster sozinha não comprova o funcionamento das rotas, da
 
 Metrics Server fornece métricas ao HPA da API, e Cluster Autoscaler ajusta a capacidade dos nós. Datadog Operator/Agent, dashboards e alertas são instalados pelo deploy da aplicação, não por este Terraform. Consulte a [observabilidade da Oficina API](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/OBSERVABILIDADE.md) para a coleta integrada.
 
-## Encerramento
+## Executando destroy
 
-Remova a plataforma depois da aplicação/observabilidade, autenticação e RDS, conforme o [encerramento](docs/EXECUCAO-LAB-AWS.md#encerramento). Preserve os states até concluir as dependências. O bucket foi criado pelo bootstrap via AWS CLI e não é destruído pelo Terraform da plataforma.
+Remova a plataforma depois da aplicação/observabilidade, autenticação e RDS, conforme o [procedimento de destroy](docs/EXECUCAO-LAB-AWS.md#executando-destroy). Preserve os states até concluir as dependências. O bucket foi criado pelo bootstrap via AWS CLI e não é destruído pelo Terraform da plataforma.
 
 ## Workflow
 

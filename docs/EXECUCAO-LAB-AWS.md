@@ -114,7 +114,7 @@ O state fica em `oficina/k8s/hom.tfstate` ou `oficina/k8s/prod.tfstate`. Com o b
 
 Consulte o [troubleshooting deste repositório](TROUBLESHOOTING.md) para credenciais, branches, dependências e falhas do componente.
 
-## Encerramento
+## Executando destroy
 
 EKS, EC2, NAT Gateway e NLB geram custos enquanto existem. Destrua esta plataforma somente após remover API/observabilidade, autenticação e RDS. Use o backend e as variáveis do ambiente correto e revise `terraform plan -destroy` antes de `terraform destroy`. O bucket foi criado pela AWS CLI, fora do Terraform; preserve states e backups até o fim e remova-o separadamente somente após encerrar todos os componentes.
 

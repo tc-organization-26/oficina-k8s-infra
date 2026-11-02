@@ -29,7 +29,7 @@ Para produção, altere o ambiente para `prod` e confira a conta antes de prosse
 - [EKS, nós e acesso Kubernetes](#eks-nós-e-acesso-kubernetes)
 - [Add-ons e escalabilidade](#add-ons-e-escalabilidade)
 - [Rede, NLB e API Gateway](#rede-nlb-e-api-gateway)
-- [Encerramento e recursos remanescentes](#encerramento-e-recursos-remanescentes)
+- [Executando destroy e verificando recursos remanescentes](#executando-destroy-e-verificando-recursos-remanescentes)
 
 ## Credenciais AWS e GitHub Actions
 
@@ -261,11 +261,11 @@ Use o ARN do ambiente correto. Confira SG/rede do VPC Link, listener TCP 80, tar
 
 Confira `enable_nat_gateway`, estado do NAT, rotas das sub-redes privadas e saída DNS/HTTPS. O NAT usa sub-rede pública com rota ao Internet Gateway. Desabilitar o NAT sem fornecer outra saída pode interromper GHCR, Secrets Manager e Datadog. Uma sub-rede chamada pública não garante IP público a todo workload; o login Lambda usa rede privada.
 
-## Encerramento e recursos remanescentes
+## Executando destroy e verificando recursos remanescentes
 
 ### Destroy falha por dependência ou recursos continuam na conta
 
-Conclua a [ordem de encerramento](EXECUCAO-LAB-AWS.md#encerramento): API/observabilidade, autenticação, banco e só então plataforma. Confira a mesma conta/região/state do apply. Recursos podem levar tempo para liberar dependências; leia o erro antes de repetir. O bucket de state é criado fora do Terraform e deve ser preservado até o fim.
+Conclua a [ordem de destroy](EXECUCAO-LAB-AWS.md#executando-destroy): API/observabilidade, autenticação, banco e só então plataforma. Confira a mesma conta/região/state do apply. Recursos podem levar tempo para liberar dependências; leia o erro antes de repetir. O bucket de state é criado fora do Terraform e deve ser preservado até o fim.
 
 ```powershell
 aws eks list-clusters --region $oficinaRegion
