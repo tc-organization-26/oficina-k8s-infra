@@ -2,13 +2,13 @@
 
 [README](../README.md) · [Troubleshooting](TROUBLESHOOTING.md) · [AWS](EXECUCAO-LAB-AWS.md)
 
-Para preparar o computador, consulte a [instalação das ferramentas](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/INSTALACAO-FERRAMENTAS.md). Para executar fora do Academy/Vocareum, siga a [preparação de conta AWS comum](CONTA-AWS-COMUM.md), incluindo as adaptações de IAM, Terraform e workflows.
+Para preparar o computador, consulte a [instalação das ferramentas](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/main/docs/INSTALACAO-FERRAMENTAS.md). Para executar fora do Academy/Vocareum, siga a [preparação de conta AWS comum](CONTA-AWS-COMUM.md), incluindo as adaptações de IAM, Terraform e workflows.
 
 Pré-requisitos: Git e Terraform >= 1.10 (as esteiras fixam 1.15.9). Comece na raiz do repositório. O patch exige PowerShell 7 (`pwsh`).
 
 ## O que pode ser executado localmente
 
-Este repositório não fornece um cluster Kubernetes ou PostgreSQL local. A validação abaixo confere o Terraform; `plan` e `apply`, mesmo executados no computador, provisionam AWS. Para desenvolver a aplicação com PostgreSQL local, utilize o [Docker Compose da aplicação](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/EXECUCAO-LOCAL.md), sem aplicar este Terraform.
+Este repositório não fornece um cluster Kubernetes ou PostgreSQL local. A validação abaixo confere o Terraform; `plan` e `apply`, mesmo executados no computador, provisionam AWS. Para desenvolver a aplicação com PostgreSQL local, utilize o [Docker Compose da aplicação](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/main/docs/EXECUCAO-LOCAL.md), sem aplicar este Terraform.
 
 ## Validação sem credenciais AWS
 

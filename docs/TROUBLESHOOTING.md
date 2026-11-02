@@ -4,9 +4,9 @@
 
 ## Troubleshooting de outros repositórios da solução
 
-- [Aplicação: Docker, Java, API, Pods e Datadog](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/TROUBLESHOOTING.md).
-- [Banco: RDS, conectividade, credenciais e snapshots](https://github.com/tc-organization-26/oficina-db-infra/blob/HEAD/docs/TROUBLESHOOTING.md).
-- [Autenticação: Python, Lambda, CPF e Authorizer](https://github.com/tc-organization-26/oficina-auth-lambda/blob/HEAD/docs/TROUBLESHOOTING.md).
+- [Aplicação: Docker, Java, API, Pods e Datadog](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/main/docs/TROUBLESHOOTING.md).
+- [Banco: RDS, conectividade, credenciais e snapshots](https://github.com/tc-organization-26/oficina-db-infra/blob/main/docs/TROUBLESHOOTING.md).
+- [Autenticação: Python, Lambda, CPF e Authorizer](https://github.com/tc-organization-26/oficina-auth-lambda/blob/main/docs/TROUBLESHOOTING.md).
 
 Este guia parte do sintoma, indica o que conferir e orienta a correção. Execute os comandos na raiz deste repositório, salvo indicação diferente. Cada bloco é um procedimento de diagnóstico independente; os exemplos usam PowerShell.
 

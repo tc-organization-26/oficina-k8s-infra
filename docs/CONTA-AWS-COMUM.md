@@ -1,6 +1,6 @@
 # Preparação para uma conta AWS comum
 
-[README](../README.md) · [Execução no laboratório AWS](EXECUCAO-LAB-AWS.md) · [Validação manual](VALIDACAO-E-EXECUCAO-MANUAL.md) · [Instalação das ferramentas](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/INSTALACAO-FERRAMENTAS.md)
+[README](../README.md) · [Execução no laboratório AWS](EXECUCAO-LAB-AWS.md) · [Validação manual](VALIDACAO-E-EXECUCAO-MANUAL.md) · [Instalação das ferramentas](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/main/docs/INSTALACAO-FERRAMENTAS.md)
 
 Este roteiro orienta a preparação de IAM e as alterações necessárias para executar os quatro componentes fora do AWS Academy/Vocareum. O código atual reutiliza `LabRole`, aplica um patch no módulo EKS e autentica os workflows com secrets temporários. Os exemplos de adaptação abaixo precisam ser implementados e validados antes do primeiro deploy na conta comum; esta documentação não altera Terraform ou workflows automaticamente.
 
@@ -178,7 +178,7 @@ kubectl get pods -n kube-system
 kubectl get deployment,pods,service,hpa -n oficina
 ```
 
-Repita as verificações de identidade/acesso na esteira OIDC: sucesso no perfil humano não comprova acesso da role do GitHub. Verifique logs do Autoscaler e add-ons, rollout da API, readiness, login e o [fluxo completo de negócio](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/VALIDACAO-FLUXO.md). A integração Datadog, as credenciais GHCR e a ordem de remoção continuam seguindo os guias atuais dos componentes.
+Repita as verificações de identidade/acesso na esteira OIDC: sucesso no perfil humano não comprova acesso da role do GitHub. Verifique logs do Autoscaler e add-ons, rollout da API, readiness, login e o [fluxo completo de negócio](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/main/docs/VALIDACAO-FLUXO.md). A integração Datadog, as credenciais GHCR e a ordem de remoção continuam seguindo os guias atuais dos componentes.
 
 ## Critérios para considerar a adaptação concluída
 
