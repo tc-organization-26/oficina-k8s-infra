@@ -1,6 +1,8 @@
 # Validação local e execução manual na AWS — oficina-k8s-infra
 
-[README](../README.md) · [Troubleshooting](TROUBLESHOOTING.md) · [AWS](EXECUCAO-AWS.md)
+[README](../README.md) · [Troubleshooting](TROUBLESHOOTING.md) · [AWS](EXECUCAO-LAB-AWS.md)
+
+Para preparar o computador, consulte a [instalação das ferramentas](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/INSTALACAO-FERRAMENTAS.md). Para executar fora do Academy/Vocareum, siga a [preparação de conta AWS comum](CONTA-AWS-COMUM.md), incluindo as adaptações de IAM, Terraform e workflows.
 
 Pré-requisitos: Git e Terraform >= 1.10 (as esteiras fixam 1.15.9). Comece na raiz do repositório. O patch exige PowerShell 7 (`pwsh`).
 
@@ -19,7 +21,7 @@ pwsh ./scripts/patch-eks-module-for-lab.ps1
 terraform validate
 ```
 
-> **Observação:** os comandos AWS abaixo seguem a configuração atual do projeto. Confira as [adaptações educacionais e os pré-requisitos de IAM](EXECUCAO-AWS.md) antes de utilizá-los em outra conta.
+> **Observação:** os comandos AWS abaixo seguem a configuração atual do projeto. Confira as [adaptações educacionais e os pré-requisitos de IAM](EXECUCAO-LAB-AWS.md) antes de utilizá-los em outra conta.
 
 ## Credenciais para comandos locais que acessam a AWS
 
@@ -77,4 +79,4 @@ terraform apply -lock-timeout=5m tfplan
 terraform output
 ```
 
-Para produção, altere tanto `TF_VAR_environment` quanto a chave do backend para `prod`. Não aplique manualmente em paralelo ao Actions. Não versione credenciais, `terraform.tfvars`, pacote, planos ou state; esses arquivos podem conter informações sensíveis. Consulte a [validação e o encerramento na AWS](EXECUCAO-AWS.md).
+Para produção, altere tanto `TF_VAR_environment` quanto a chave do backend para `prod`. Não aplique manualmente em paralelo ao Actions. Não versione credenciais, `terraform.tfvars`, pacote, planos ou state; esses arquivos podem conter informações sensíveis. Consulte a [validação e o encerramento na AWS](EXECUCAO-LAB-AWS.md).

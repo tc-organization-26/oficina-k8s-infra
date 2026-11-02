@@ -1,6 +1,6 @@
 # Troubleshooting — oficina-k8s-infra
 
-[README](../README.md) · [Validação local e execução manual](VALIDACAO-E-EXECUCAO-MANUAL.md) · [Execução na AWS](EXECUCAO-AWS.md)
+[README](../README.md) · [Validação local e execução manual](VALIDACAO-E-EXECUCAO-MANUAL.md) · [Execução no laboratório AWS](EXECUCAO-LAB-AWS.md)
 
 ## Troubleshooting de outros repositórios da solução
 
@@ -19,7 +19,7 @@ $env:AWS_DEFAULT_REGION = $oficinaRegion
 aws sts get-caller-identity
 ```
 
-Para produção, altere o ambiente para `prod` e confira a conta antes de prosseguir. As credenciais do GitHub não configuram o terminal; o [guia AWS](EXECUCAO-AWS.md#credenciais-e-ferramentas) explica os pré-requisitos de acesso. Ao compartilhar evidências, informe ambiente, horário, URL/caminho, status HTTP, ID do workflow e mensagem de erro. Remova tokens, senhas e valores de secrets dos trechos compartilhados.
+Para produção, altere o ambiente para `prod` e confira a conta antes de prosseguir. As credenciais do GitHub não configuram o terminal; o [guia AWS](EXECUCAO-LAB-AWS.md#credenciais-e-ferramentas) explica os pré-requisitos de acesso. Ao compartilhar evidências, informe ambiente, horário, URL/caminho, status HTTP, ID do workflow e mensagem de erro. Remova tokens, senhas e valores de secrets dos trechos compartilhados.
 
 ## Assuntos
 
@@ -265,7 +265,7 @@ Confira `enable_nat_gateway`, estado do NAT, rotas das sub-redes privadas e saí
 
 ### Destroy falha por dependência ou recursos continuam na conta
 
-Conclua a [ordem de encerramento](EXECUCAO-AWS.md#encerramento): API/observabilidade, autenticação, banco e só então plataforma. Confira a mesma conta/região/state do apply. Recursos podem levar tempo para liberar dependências; leia o erro antes de repetir. O bucket de state é criado fora do Terraform e deve ser preservado até o fim.
+Conclua a [ordem de encerramento](EXECUCAO-LAB-AWS.md#encerramento): API/observabilidade, autenticação, banco e só então plataforma. Confira a mesma conta/região/state do apply. Recursos podem levar tempo para liberar dependências; leia o erro antes de repetir. O bucket de state é criado fora do Terraform e deve ser preservado até o fim.
 
 ```powershell
 aws eks list-clusters --region $oficinaRegion

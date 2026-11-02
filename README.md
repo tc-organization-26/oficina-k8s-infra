@@ -10,8 +10,20 @@ Este repositório transforma a plataforma em código Terraform e prepara os cont
 
 ## Navegação
 
+Os guias abaixo complementam este README com instruções de execução, configuração e diagnóstico.
+
+**Guias e documentos complementares**
+
+- [Instalação das ferramentas](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/INSTALACAO-FERRAMENTAS.md) — instalar ferramentas e conferir o ambiente.
+- [Conta AWS comum](docs/CONTA-AWS-COMUM.md) — preparar IAM, OIDC e adaptar a execução fora do Academy.
+- [Validação local e execução manual](docs/VALIDACAO-E-EXECUCAO-MANUAL.md) — validação e execução pelo terminal.
+- [Execução no laboratório AWS](docs/EXECUCAO-LAB-AWS.md) — checklist GitHub, dependências, deploy e encerramento.
+- [Tecnologias e versões](docs/VERSOES.md) — tecnologias, ferramentas, versões e fontes.
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — diagnóstico por assunto e recuperação.
+
+**Seções deste README**
+
 - [Valor para o projeto](#valor-para-o-projeto)
-- [Documentação e guias](#índice-da-documentação)
 - [Execução e deploy](#execução-e-deploy)
 - [Arquitetura](#arquitetura)
 - [Escalabilidade e disponibilidade](#escalabilidade-e-disponibilidade)
@@ -38,15 +50,6 @@ Este repositório transforma a plataforma em código Terraform e prepara os cont
 - criar NLB privado, VPC Link e API Gateway HTTP API;
 - publicar no SSM os identificadores consumidos pelo banco, pela autenticação e pela aplicação.
 
-## Índice da documentação
-
-| Assunto | Documento |
-| --- | --- |
-| Validação e execução pelo terminal | [Validação local e execução manual](docs/VALIDACAO-E-EXECUCAO-MANUAL.md) |
-| Checklist GitHub, dependências, deploy e encerramento | [Execução na AWS](docs/EXECUCAO-AWS.md) |
-| Tecnologias, ferramentas, versões e fontes | [Tecnologias e versões](docs/VERSOES.md) |
-| Diagnóstico por assunto e recuperação | [Troubleshooting](docs/TROUBLESHOOTING.md) |
-
 ## Repositórios da solução
 
 | Repositório | Responsabilidade |
@@ -64,9 +67,9 @@ Consulte o [guia de validação local e execução manual](docs/VALIDACAO-E-EXEC
 
 Este repositório não cria um cluster Kubernetes local. Executar plan/apply no computador continua acessando a AWS e exige o mesmo backend e ambiente da esteira.
 
-### Deploy e execução na AWS
+### Deploy e execução no laboratório AWS
 
-Prepare o [checklist de acessos e configurações](docs/EXECUCAO-AWS.md#checklist-inicial) e conclua as dependências na [ordem de implantação](docs/EXECUCAO-AWS.md#ordem-da-primeira-implantação). Faça o merge para `homologacao` para disparar o deploy em `hom` e aguarde a conclusão. Para produção, use `main` após validar homologação. **Run workflow é uma alternativa ou reexecução**, não um passo obrigatório após o merge.
+Prepare o [checklist de acessos e configurações](docs/EXECUCAO-LAB-AWS.md#checklist-inicial) e conclua as dependências na [ordem de implantação](docs/EXECUCAO-LAB-AWS.md#ordem-da-primeira-implantação). Faça o merge para `homologacao` para disparar o deploy em `hom` e aguarde a conclusão. Para produção, use `main` após validar homologação. **Run workflow é uma alternativa ou reexecução**, não um passo obrigatório após o merge.
 
 > O código contém adaptações educacionais de IAM e credenciais. Confira a observação do guia AWS antes de utilizá-lo em outra conta.
 
@@ -138,7 +141,7 @@ Configurar acessos e secrets dos quatro repositórios
 
 Execute cada etapa no mesmo ambiente e aguarde sua conclusão antes da próxima. As esteiras não disparam os outros repositórios. O Gateway provisionado aqui só passa a atender os caminhos da aplicação depois que autenticação e API estiverem implantadas.
 
-O [guia AWS](docs/EXECUCAO-AWS.md) contém pré-requisitos, comandos e ordem de remoção. Para desenvolvimento do negócio no computador, use o Docker Compose do repositório da aplicação; executar Terraform localmente continua provisionando recursos AWS.
+O [guia AWS](docs/EXECUCAO-LAB-AWS.md) contém pré-requisitos, comandos e ordem de remoção. Para desenvolvimento do negócio no computador, use o Docker Compose do repositório da aplicação; executar Terraform localmente continua provisionando recursos AWS.
 
 ## Recursos principais
 
@@ -231,13 +234,13 @@ Para cada ambiente são criados:
 
 ## Validação após o deploy
 
-Confirme os nós EKS, os workloads de escalabilidade e os parâmetros SSM conforme o [roteiro de validação](docs/EXECUCAO-AWS.md#validar-a-plataforma). Os outputs incluem `cluster_name`, `vpc_id`, `private_subnet_ids`, `api_gateway_url` e `application_nlb_dns`.
+Confirme os nós EKS, os workloads de escalabilidade e os parâmetros SSM conforme o [roteiro de validação](docs/EXECUCAO-LAB-AWS.md#validar-a-plataforma). Os outputs incluem `cluster_name`, `vpc_id`, `private_subnet_ids`, `api_gateway_url` e `application_nlb_dns`.
 
 O Gateway pode ainda não responder às rotas da aplicação: elas dependem dos deploys da autenticação e da API. Para diagnóstico, consulte [EKS e acesso](docs/TROUBLESHOOTING.md#eks-nós-e-acesso-kubernetes) ou [rede, NLB e Gateway](docs/TROUBLESHOOTING.md#rede-nlb-e-api-gateway).
 
 ## Validação integrada
 
-Após a [validação da plataforma](docs/EXECUCAO-AWS.md#validar-a-plataforma), confira a solução completa:
+Após a [validação da plataforma](docs/EXECUCAO-LAB-AWS.md#validar-a-plataforma), confira a solução completa:
 
 1. Os nós estão `Ready`, e Metrics Server e Cluster Autoscaler estão em execução.
 2. A aplicação concluiu o rollout no namespace `oficina`, o Service usa NodePort `30081` e o HPA encontra métricas após a coleta inicial.
@@ -253,7 +256,7 @@ Metrics Server fornece métricas ao HPA da API, e Cluster Autoscaler ajusta a ca
 
 ## Encerramento
 
-Remova a plataforma depois da aplicação/observabilidade, autenticação e RDS, conforme o [encerramento](docs/EXECUCAO-AWS.md#encerramento). Preserve os states até concluir as dependências. O bucket foi criado pelo bootstrap via AWS CLI e não é destruído pelo Terraform da plataforma.
+Remova a plataforma depois da aplicação/observabilidade, autenticação e RDS, conforme o [encerramento](docs/EXECUCAO-LAB-AWS.md#encerramento). Preserve os states até concluir as dependências. O bucket foi criado pelo bootstrap via AWS CLI e não é destruído pelo Terraform da plataforma.
 
 ## Workflow
 
@@ -262,7 +265,7 @@ Remova a plataforma depois da aplicação/observabilidade, autenticação e RDS,
 
 ### Fluxo de branches
 
-`fase-3` valida e abre PR para `homologacao`; `homologacao` faz deploy em `hom` e abre PR para `main`; `main` faz deploy em `prod`. Os merges são manuais. Executar manualmente em `fase-3` também só valida. Consulte [branches e ambientes](docs/EXECUCAO-AWS.md#branches-e-ambientes).
+`fase-3` valida e abre PR para `homologacao`; `homologacao` faz deploy em `hom` e abre PR para `main`; `main` faz deploy em `prod`. Os merges são manuais. Executar manualmente em `fase-3` também só valida. Consulte [branches e ambientes](docs/EXECUCAO-LAB-AWS.md#branches-e-ambientes).
 
 ## Troubleshooting
 

@@ -1,6 +1,6 @@
 # Tecnologias e versões — oficina-k8s-infra
 
-[README](../README.md) · [Validação local e execução manual](VALIDACAO-E-EXECUCAO-MANUAL.md) · [Execução na AWS](EXECUCAO-AWS.md)
+[README](../README.md) · [Validação local e execução manual](VALIDACAO-E-EXECUCAO-MANUAL.md) · [Execução no laboratório AWS](EXECUCAO-LAB-AWS.md)
 
 | Tecnologia | Versão / referência | Uso |
 | --- | --- | --- |
