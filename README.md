@@ -2,6 +2,33 @@
 
 Terraform da plataforma AWS: VPC, EKS, Metrics Server, Cluster Autoscaler, NLB privado, VPC Link e API Gateway. Inclui o bootstrap do backend S3 e das variáveis do GitHub para os quatro repositórios. É a primeira infraestrutura a ser implantada.
 
+## Contexto e objetivo
+
+A oficina precisa manter o atendimento disponível durante o crescimento da demanda: cadastro, diagnóstico, aprovação de orçamento e execução dependem do acesso à API. Criar rede e cluster manualmente dificulta reproduzir ambientes e recuperar uma implantação.
+
+Este repositório transforma a plataforma em código Terraform e prepara os contratos usados pelos outros três componentes. A aplicação usa essa capacidade para atender picos de requisições, enquanto banco e autenticação compartilham uma rede privada e uma entrada HTTP controlada.
+
+## Navegação
+
+- [Valor para o projeto](#valor-para-o-projeto)
+- [Documentação e guias](#índice-da-documentação)
+- [Execução e deploy](#execução-e-deploy)
+- [Arquitetura](#arquitetura)
+- [Escalabilidade e disponibilidade](#escalabilidade-e-disponibilidade)
+- [Caminho da implantação](#caminho-da-implantação)
+- [Terraform e contratos SSM](#terraform-da-plataforma)
+- [Validação integrada](#validação-integrada)
+- [Troubleshooting](#troubleshooting)
+
+## Valor para o projeto
+
+- rede e cluster reproduzíveis para homologação e produção;
+- nós privados e entrada da aplicação pelo API Gateway;
+- capacidade ajustável para a API por meio de HPA e Cluster Autoscaler;
+- descoberta de recursos via SSM, evitando copiar IDs entre projetos;
+- states por componente e ambiente, com backend S3 e locking;
+- automação da implantação e acompanhamento pelo GitHub Actions.
+
 ## Responsabilidades deste repositório
 
 - preparar o bucket S3 dos states e distribuir as variáveis GitHub dos quatro repositórios pelo bootstrap;
@@ -82,6 +109,36 @@ Consulte os [recursos principais](#recursos-principais) deste componente. A [arq
 Os nós do EKS ficam em sub-redes privadas. O endpoint do EKS permanece público para permitir a administração e o deploy pelo GitHub Actions. A aplicação é exposta externamente somente pelo API Gateway.
 
 O Gateway, o VPC Link e a integração HTTP da aplicação são criados aqui. As rotas públicas de login/saúde e as rotas protegidas pelo Authorizer são criadas pelo repositório de autenticação. A [visão integrada de componentes](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/ARQUITETURA-SOLUCAO.md#diagrama-de-componentes-da-aplicação) inclui banco, autenticação e monitoramento.
+
+## Escalabilidade e disponibilidade
+
+| Mecanismo | Papel na operação | Limite atual |
+| --- | --- | --- |
+| HPA da aplicação | Ajusta Pods de 2 a 6 réplicas por CPU e memória | Manifest mantido no repositório da API; depende de requests e métricas disponíveis |
+| Metrics Server | Fornece métricas de recursos ao HPA | Não substitui a observabilidade de logs, traces e negócio |
+| Cluster Autoscaler | Ajusta a quantidade de nós para acomodar workloads | Node group configurado com mínimo 1, desejado 2 e máximo 4 por padrão |
+| Rede em duas AZs | Oferece sub-redes em zonas distintas | Não garante, por si só, distribuição de réplicas ou disponibilidade de todas as dependências |
+| NAT Gateway | Permite saída dos workloads privados | Um NAT por padrão; a saída depende dele |
+| RDS | Mantém a persistência fora do ciclo de vida dos Pods | Provisionado por outro repositório, com `multi_az=false` por padrão |
+
+Os mecanismos de escala apoiam os horários de pico, mas sua capacidade precisa ser observada durante o uso. Quantidade de réplicas, limites de nós e saúde do banco devem ser avaliados em conjunto; a configuração atual não equivale a uma garantia de alta disponibilidade ponta a ponta.
+
+## Caminho da implantação
+
+```text
+Configurar acessos e secrets dos quatro repositórios
+  → executar bootstrap.yml: bucket S3 e variables compartilhadas
+  → implantar plataforma: rede, EKS, escalabilidade e entrada HTTP
+  → implantar RDS: instância privada e parâmetros do banco
+  → implantar autenticação: Lambdas, chave JWT, Authorizer e rotas
+  → implantar API: imagem GHCR, Flyway, workloads e observabilidade
+  → reexecutar autenticação para ativar Datadog após o secret compartilhado
+  → validar readiness, login e fluxo de ordem de serviço
+```
+
+Execute cada etapa no mesmo ambiente e aguarde sua conclusão antes da próxima. As esteiras não disparam os outros repositórios. O Gateway provisionado aqui só passa a atender os caminhos da aplicação depois que autenticação e API estiverem implantadas.
+
+O [guia AWS](docs/EXECUCAO-AWS.md) contém pré-requisitos, comandos e ordem de remoção. Para desenvolvimento do negócio no computador, use o Docker Compose do repositório da aplicação; executar Terraform localmente continua provisionando recursos AWS.
 
 ## Recursos principais
 
@@ -177,6 +234,18 @@ Para cada ambiente são criados:
 Confirme os nós EKS, os workloads de escalabilidade e os parâmetros SSM conforme o [roteiro de validação](docs/EXECUCAO-AWS.md#validar-a-plataforma). Os outputs incluem `cluster_name`, `vpc_id`, `private_subnet_ids`, `api_gateway_url` e `application_nlb_dns`.
 
 O Gateway pode ainda não responder às rotas da aplicação: elas dependem dos deploys da autenticação e da API. Para diagnóstico, consulte [EKS e acesso](docs/TROUBLESHOOTING.md#eks-nós-e-acesso-kubernetes) ou [rede, NLB e Gateway](docs/TROUBLESHOOTING.md#rede-nlb-e-api-gateway).
+
+## Validação integrada
+
+Após a [validação da plataforma](docs/EXECUCAO-AWS.md#validar-a-plataforma), confira a solução completa:
+
+1. Os nós estão `Ready`, e Metrics Server e Cluster Autoscaler estão em execução.
+2. A aplicação concluiu o rollout no namespace `oficina`, o Service usa NodePort `30081` e o HPA encontra métricas após a coleta inicial.
+3. O readiness público pelo Gateway retorna `status=UP`, indicando prontidão da API e do banco.
+4. O login por CPF retorna JWT, e uma chamada autenticada a `/clientes` é aceita.
+5. O [roteiro de negócio da API](https://github.com/tc-organization-26/gestao-oficina-tc-1/blob/HEAD/docs/VALIDACAO-FLUXO.md) percorre diagnóstico, orçamento, execução, pagamento e entrega.
+
+A disponibilidade do cluster sozinha não comprova o funcionamento das rotas, das migrations ou das operações da oficina. Use os guias de diagnóstico dos componentes envolvidos se uma dessas etapas falhar.
 
 ## Observabilidade
 
