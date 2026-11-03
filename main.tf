@@ -76,6 +76,14 @@ module "eks" {
   }
 
   node_security_group_additional_rules = {
+    ingress_datadog_webhook_from_cluster = {
+      description                   = "EKS control plane para webhook Datadog"
+      protocol                      = "tcp"
+      from_port                     = 8000
+      to_port                       = 8000
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
     ingress_app_from_vpc = {
       description = "Aplicacao recebida pelo NLB privado"
       protocol    = "tcp"
