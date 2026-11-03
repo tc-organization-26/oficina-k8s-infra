@@ -37,7 +37,7 @@ Para produção, altere o ambiente para `prod` e confira a conta antes de prosse
 
 Renove juntos `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` e `AWS_SESSION_TOKEN` na organização (com acesso ao repositório) ou nos Repository secrets. Atualize também o terminal utilizado. Verifique espaços acidentais e relógio da máquina se houver erro de assinatura/tempo. Repita `aws sts get-caller-identity`; ele precisa identificar a conta esperada antes de um novo deploy.
 
-Se o erro persistir no Actions, confira se um secret do Environment está sobrescrevendo o valor renovado da organização. Reinicie a execução após corrigir; não é necessário refazer o bootstrap só para renovar credenciais.
+Se o erro persistir no Actions, confira se um Repository secret está sobrescrevendo o valor renovado da organização ou se há um secret de Environment sobrescrevendo a configuração compartilhada. Reinicie a execução após corrigir; não é necessário refazer o bootstrap só para renovar credenciais.
 
 ### ParameterNotFound, ResourceNotFound ou recursos do ambiente errado
 
@@ -73,7 +73,7 @@ O fluxo educacional atual reutiliza LabRole e não cria roles/OIDC. Tentativas d
 
 ### GH_ADMIN_TOKEN ausente, GitHub 404 ou falha ao gravar variables
 
-Confirme os quatro repositórios remotos, seus nomes e o acesso do token para leitura e administração de Actions Variables. `GH_ADMIN_TOKEN` fica neste repositório; o bootstrap não seleciona Environment e precisa encontrar também os três secrets AWS fora de Environment secrets. Um 404 de repositório privado pode ser falta de acesso.
+Confirme os quatro repositórios remotos, seus nomes e o acesso do token para leitura e administração de Actions Variables. `GH_ADMIN_TOKEN` fica neste repositório; o bootstrap precisa acessar os três secrets AWS no repositório ou na organização. Um 404 de repositório privado pode ser falta de acesso.
 
 O script usa `tc-organization-26` e a lista dos quatro repositórios por padrão. Em outra organização, revise os parâmetros `GitHubOwner`/`Repositories` do script e a chamada do workflow. O token do bootstrap não é o token de leitura do GHCR nem o `GITHUB_TOKEN` de promoção.
 

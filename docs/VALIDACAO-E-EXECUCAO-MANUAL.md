@@ -37,7 +37,7 @@ $env:AWS_DEFAULT_REGION = "us-east-1"
 aws sts get-caller-identity
 ```
 
-Confira a conta antes do plano. Use o mesmo `project_name`, ambiente, região, bucket e chave de state usados pelo CI/CD; o padrão Terraform `environment=dev` não equivale a `hom`. Não use um state novo para recursos que já estão gerenciados por outro state.
+Confira a conta antes do plano. Use o mesmo `project_name`, ambiente, região, bucket e chave de state usados pelo CI/CD; o padrão Terraform `environment=dev` não equivale a `hom` nem a `prod`. Não use um state novo para recursos que já estão gerenciados por outro state.
 
 ## Aplicação manual na AWS
 
@@ -57,13 +57,14 @@ Para escolher o bucket, acrescente `-StateBucketName NOME_GLOBALMENTE_UNICO`. O 
 Informe o bucket real criado pelo bootstrap, sem copiar literalmente `SEU_BUCKET` ou `ACCOUNT_ID`. Execute na raiz. A chave identifica o mesmo state usado pela esteira:
 
 ```powershell
-$env:TF_VAR_environment = "hom"
+$oficinaEnv = "hom" # Use "prod" para produção.
+$env:TF_VAR_environment = $oficinaEnv
 $env:TF_VAR_aws_region = "us-east-1"
 $env:TF_VAR_lab_role_arn = "arn:aws:iam::ACCOUNT_ID:role/LabRole"
 
 terraform init -reconfigure `
   -backend-config="bucket=SEU_BUCKET" `
-  -backend-config="key=oficina/k8s/hom.tfstate" `
+  -backend-config="key=oficina/k8s/$oficinaEnv.tfstate" `
   -backend-config="region=us-east-1" `
   -backend-config="encrypt=true" `
   -backend-config="use_lockfile=true"
@@ -79,4 +80,4 @@ terraform apply -lock-timeout=5m tfplan
 terraform output
 ```
 
-Para produção, altere tanto `TF_VAR_environment` quanto a chave do backend para `prod`. Não aplique manualmente em paralelo ao Actions. Não versione credenciais, `terraform.tfvars`, pacote, planos ou state; esses arquivos podem conter informações sensíveis. Consulte a [validação e o destroy na AWS](EXECUCAO-LAB-AWS.md).
+Para produção, defina `$oficinaEnv = "prod"` antes do `terraform init`; o exemplo usa esse valor tanto em `TF_VAR_environment` quanto na chave do backend. Reinicialize o backend e gere um novo plano sempre que trocar de ambiente. Não aplique manualmente em paralelo ao Actions. Não versione credenciais, `terraform.tfvars`, pacote, planos ou state; esses arquivos podem conter informações sensíveis. Consulte a [validação e o destroy na AWS](EXECUCAO-LAB-AWS.md).
