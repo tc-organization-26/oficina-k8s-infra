@@ -77,7 +77,7 @@ Na primeira instalação, execute manualmente `bootstrap.yml` antes do deploy da
 
 ### Acompanhamento dos deploys
 
-Consulte os [Deployments deste repositório](https://github.com/tc-organization-26/oficina-k8s-infra/deployments) para acompanhar as implantações de homologação e produção e acessar a URL do API Gateway registrada pelo workflow. 
+Consulte as [execuções do Actions](https://github.com/tc-organization-26/oficina-k8s-infra/actions) para acompanhar as implantações de homologação e produção e acessar a URL do API Gateway no resumo do workflow.
 
 A URL também fica no resumo da execução e no output `api_gateway_url`; pode mudar entre ambientes e recriações. As rotas dependem dos deploys da autenticação e da aplicação.
 

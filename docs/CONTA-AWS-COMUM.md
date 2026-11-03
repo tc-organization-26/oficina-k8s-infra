@@ -44,7 +44,7 @@ Crie as roles pelo IAM ou por um bootstrap Terraform dedicado. Em cada role de s
 
 | Role sugerida | Principal de confiança | Permissões necessárias |
 | --- | --- | --- |
-| `oficina-hom-deploy` | Provider OIDC GitHub, restrito aos repositórios/Environment autorizados | Provisionar os recursos do componente, acessar state e passar somente as roles previstas |
+| `oficina-hom-deploy` | Provider OIDC GitHub, restrito aos repositórios e branches autorizados | Provisionar os recursos do componente, acessar state e passar somente as roles previstas |
 | `oficina-hom-eks-cluster` | `eks.amazonaws.com` | `AmazonEKSClusterPolicy` ou política equivalente documentada pela AWS |
 | `oficina-hom-eks-nodes` | `ec2.amazonaws.com` | `AmazonEKSWorkerNodePolicy` e `AmazonEC2ContainerRegistryPullOnly`; CNI com identidade própria |
 | `oficina-hom-vpc-cni` | EKS Pod Identity ou IRSA configurado para o ServiceAccount | `AmazonEKS_CNI_Policy` para a rede IPv4 atual |
@@ -87,7 +87,7 @@ O diretório `bootstrap/` e `scripts/bootstrap.ps1` contêm uma implementação 
 
 Crie ou reutilize no IAM o provider `https://token.actions.githubusercontent.com` com audience `sts.amazonaws.com`. Configure a trust da role de deploy com `sts:AssumeRoleWithWebIdentity` e condições de audience e subject restritas. Siga a [documentação GitHub para AWS](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws).
 
-Exemplo para um repositório com subject padrão e GitHub Environment `homologacao`; substitua `ACCOUNT_ID`, organização e repositório. Inclua explicitamente os demais repositórios autorizados ou use roles separadas por componente:
+Exemplo para um repositório com subject padrão, sem GitHub Environments, na branch `homologacao`; substitua `ACCOUNT_ID`, organização e repositório. Inclua explicitamente os demais repositórios autorizados ou use roles separadas por componente:
 
 ```json
 {
@@ -101,14 +101,14 @@ Exemplo para um repositório com subject padrão e GitHub Environment `homologac
     "Condition": {
       "StringEquals": {
         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-        "token.actions.githubusercontent.com:sub": "repo:tc-organization-26/oficina-k8s-infra:environment:homologacao"
+        "token.actions.githubusercontent.com:sub": "repo:tc-organization-26/oficina-k8s-infra:ref:refs/heads/homologacao"
       }
     }
   }]
 }
 ```
 
-Para produção, use o Environment `producao`. Quando um job usa Environment, o subject padrão contém esse Environment, não `ref:refs/heads/...`; configure as restrições de branch e revisões no próprio Environment. Sem Environment, restrinja o subject à branch necessária. Se os repositórios usam subjects imutáveis ou customizados, ajuste as condições ao formato realmente emitido; o exemplo acima não serve automaticamente para esses tokens. O bootstrap existente já distingue subjects tradicionais e imutáveis.
+Para produção, autorize o subject `repo:tc-organization-26/oficina-k8s-infra:ref:refs/heads/main` na role correspondente. Proteja as branches e revise os PRs antes do merge. Se os repositórios usam subjects imutáveis ou customizados, ajuste as condições ao formato realmente emitido; o exemplo acima não serve automaticamente para esses tokens. O bootstrap existente já distingue subjects tradicionais e imutáveis.
 
 Nos jobs que acessam AWS, substitua a autenticação pelos secrets de sessão pelo bloco abaixo, preservando as demais permissões necessárias ao job:
 
@@ -125,7 +125,7 @@ steps:
       aws-region: ${{ vars.AWS_REGION }}
 ```
 
-Cadastre `AWS_ROLE_ARN` por Environment/repositório e mantenha `AWS_REGION` e `TF_STATE_BUCKET`. A variável `AWS_ROLE_ARN` já é escrita pelo script educacional, mas os workflows atuais não a usam para assumir uma role; somente cadastrá-la não ativa OIDC. Remova dos jobs migrados os parâmetros `aws-access-key-id`, `aws-secret-access-key` e `aws-session-token`.
+Cadastre `AWS_ROLE_ARN` nas Actions variables do repositório e mantenha `AWS_REGION` e `TF_STATE_BUCKET`. A variável `AWS_ROLE_ARN` já é escrita pelo script educacional, mas os workflows atuais não a usam para assumir uma role; somente cadastrá-la não ativa OIDC. Remova dos jobs migrados os parâmetros `aws-access-key-id`, `aws-secret-access-key` e `aws-session-token`.
 
 ## Alterações no Terraform e no acesso EKS
 
@@ -167,11 +167,12 @@ A plataforma instala charts e recursos de escopo de cluster; a role de deploy pr
 
 Depois de implementar as adaptações, execute `terraform fmt -check -recursive`, `terraform init` no backend correto, `terraform validate` e revise o plano de cada componente. Uma migração de ambiente existente pode alterar roles, acesso e recursos: trate o plano como migração, não como nova instalação sem estado.
 
-Em uma instalação nova, conclua bootstrap e depois plataforma, banco, autenticação e API. Mantenha SSM, nomes e states no mesmo `hom` ou `prod`. No terminal autenticado:
+Em uma instalação nova, conclua bootstrap e depois plataforma, banco, autenticação e API. Mantenha SSM, nomes e states no mesmo `hom` ou `prod`. No terminal autenticado, selecione `hom` ou `prod`:
 
 ```powershell
+$oficinaEnv = "hom" # Use "prod" para produção.
 aws sts get-caller-identity
-$cluster = aws ssm get-parameter --name /oficina/hom/eks/cluster-name --query Parameter.Value --output text
+$cluster = aws ssm get-parameter --name "/oficina/$oficinaEnv/eks/cluster-name" --query Parameter.Value --output text
 aws eks update-kubeconfig --name $cluster --region us-east-1
 kubectl get nodes
 kubectl get pods -n kube-system
